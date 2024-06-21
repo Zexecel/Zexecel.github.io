@@ -1,3 +1,4 @@
+/* Reset geral */
 html, body {
     margin: 0;
     padding: 0;
@@ -6,6 +7,7 @@ html, body {
     overflow: hidden;
 }
 
+/* Estilização do Body */
 body {
     background: black;
     display: flex;
@@ -14,22 +16,26 @@ body {
     align-items: center;
 }
 
+/* Estilização do Canvas */
 #canvas1 {
     background: grey;
     border: 5px solid white;
+    display: flex;
     max-width: 100%;
     max-height: 100%;
 }
 
+/* Estilização das Imagens */
 #playerImage, #backgroundImage, #enemyImage, #ghostImage, #spiderImage {
     display: none;
 }
 
+/* Estilização dos Botões */
 #retryButton, #quitButton {
-    display: none;
+    display: none; /* Será exibido via JavaScript quando o jogo terminar */
     position: absolute;
-    padding: 15px 30px;
-    font-size: 20px;
+    padding: 10px 20px; /* Reduzir o padding dos botões */
+    font-size: 16px; /* Reduzir o tamanho da fonte dos botões */
     color: white;
     background-color: #333;
     border: 2px solid #fff;
@@ -44,57 +50,61 @@ body {
 }
 
 #retryButton {
-    top: 45%;
+    top: 35%; /* Mover o botão de recomeçar mais para cima */
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
 #quitButton {
-    top: 55%;
+    top: 75%; /* Ajuste para evitar sobreposição */
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
+/* Estilização do Container de Vídeo */
 #videoContainer {
     display: none;
     position: absolute;
-    top: 65%;
+    top: 70%;
     left: 50%;
     transform: translate(-50%, 0);
     width: 560px;
     height: 315px;
 }
 
+/* Estilização do Container de Pontuação */
 #scoreContainer {
-    display: none;
+    display: none; /* Será exibido via JavaScript quando o jogo terminar */
     position: absolute;
-    top: 65%;
-    left: 50%;
+    top: 90%; /* Ajustado para abaixar a posição */
+    left: 20%;
     transform: translate(-50%, -50%);
     text-align: center;
     color: white;
     background-color: #333;
     border: 2px solid #fff;
     border-radius: 5px;
-    padding: 15px;
-    font-size: 20px;
+    padding: 10px; /* Reduzir padding do contêiner de pontuação */
+    font-size: 16px; /* Reduzir o tamanho da fonte do contêiner de pontuação */
     font-family: 'Helvetica', sans-serif;
 }
 
 #scoreContainer p {
-    margin: 5px 0;
+    margin: 5px 0; /* Reduzir a margem entre as linhas */
 }
 
+/* Estilização da Pontuação em Jogo */
 #inGameScore {
     position: absolute;
     top: 10px;
-    left: 50px; /* Adjust as needed */
+    left: 50px; /* Ajuste conforme necessário */
     font-size: 40px;
     color: white;
     z-index: 10;
     font-family: 'Helvetica', sans-serif;
 }
 
+/* Estilização do Tutorial */
 #tutorial {
     display: flex;
     flex-direction: column;
@@ -110,7 +120,7 @@ body {
     border: 2px solid white;
     border-radius: 10px;
     text-align: center;
-    z-index: 20; /* Ensure the tutorial is on top */
+    z-index: 20; /* Garante que o tutorial fique por cima */
 }
 
 #gameTitle {
@@ -120,6 +130,7 @@ body {
     margin-bottom: 10px;
 }
 
+/* Estilização do Botão de Confirmação */
 #confirmButton {
     margin-top: 20px;
     padding: 10px 20px;
@@ -137,6 +148,7 @@ body {
     color: #333;
 }
 
+/* Estilização do Rodapé */
 footer {
     position: absolute;
     bottom: 10px;
@@ -148,3 +160,22 @@ footer {
 footer h5, footer h6 {
     margin: 5px 0;
 }
+
+/* Controles de toque na tela */
+.control-btn {
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border-radius: 50%;
+    z-index: 100; /* Garante que os controles fiquem acima dos outros elementos */
+}
+.up { bottom: 100px; left: 50%; transform: translateX(-50%); }
+.down { bottom: 20px; left: 50%; transform: translateX(-50%); }
+.left { bottom: 60px; left: 20px; }
+.right { bottom: 60px; right: 20px; }

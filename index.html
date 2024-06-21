@@ -6,36 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JavaScript 2D Game</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="blackandblack.png" type="image/png">
 </head>
 <body>
     <canvas id="canvas1"></canvas>
-    <img id="playerImage" src="player.png" alt="Player Image">
-    <img id="backgroundImage" src="background.png" alt="Background Image">
-    <img id="enemyImage" src="enemy_1.png" alt="Enemy Image">
-    <img id="ghostImage" src="ghost.png" alt="Ghost Image">
-    <img id="spiderImage" src="spider.png" alt="Spider Image">
-    <img id="heartImage" src="lives.png" alt="Heart Image" style="display:none">
-    <button id="retryButton">Retry</button>
-    <button id="quitButton">Quit</button>
+    <img id="playerImage" src="player.png" alt="Imagem do Jogador">
+    <img id="backgroundImage" src="background.png" alt="Imagem de Fundo">
+    <img id="enemyImage" src="enemy_1.png" alt="Imagem do Inimigo">
+    <img id="ghostImage" src="ghost.png" alt="Imagem do Fantasma">
+    <img id="spiderImage" src="spider.png" alt="Imagem da Aranha">
+    <img id="heartImage" src="lives.png" alt="Imagem de Coração" style="display:none">
+    <div id="gameOverText" style="display: none;">GAME OVER, tenta novamente!</div>
+    <button id="retryButton">Recomeçar</button>
+    <button id="quitButton">Sair</button>
     <div id="scoreContainer">
-        <p id="highScore">High Score: 0</p>
-        <p id="currentScore">Score: 0</p>
+        <p id="highScore">Pontuação Máxima: 0</p>
+        <p id="currentScore">Pontuação: 0</p>
+    </div>
+    
     </div>
     <div id="videoContainer"></div>
-    <div id="tutorial">
-        <h1 id="gameTitle">Black or Black</h1>
-        <p>Parabéns em teres chegado a este website. Estás prestes a jogar "Black or Black", um jogo Side-Scroller. Move-te com ←↑→ desvia-te dos inimigos e tenta bater o teu Highscore. Let's Game.</p>
-        <button id="confirmButton">Confirm</button>
+    <div id="tutorial" class="hidden">
+        
+        <!-- IMPORTANTE: O conteúdo do tutorial vai ser injetado aqui pelo JavaScript -->
+        
     </div>
     <audio id="soundtrack" src="LASERS_-_01_-_Amsterdam.mp3" loop></audio>
     <audio id="damageSound" src="damage.wav"></audio>
     <audio id="deathSound" src="death.wav"></audio>
     <audio id="jumpSound" src="jump.wav"></audio>
     <audio id="menuNavigationSound" src="menu_navigation.wav"></audio>
-    <audio id="menuClickSound" src="menu_click.wav"></audio> <!-- Ensure this audio element is present -->
+    <audio id="menuClickSound" src="menu_click.wav"></audio>
     <audio id="spiderSound" src="spider.wav"></audio>
     <audio id="wormSound" src="worm.wav"></audio>
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Detecta o tipo de dispositivo (móvel ou desktop) e inicializa o handler de input adequado
+            if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 'ontouchstart' in window) {
+                console.log("Dispositivo móvel detectado. A inicializar o handler de input para dispositivos móveis.");
+                const input = new MobileInputHandler();
+                input.displayMobileTutorial();
+            } else {
+                console.log("Desktop detectado. A inicializar o handler de input para desktop.");
+                const input = new InputHandler();
+                input.displayDesktopTutorial();
+            }
+        });
+    </script>
     <footer>
         <h5>Renato Cruz</h5>
         <h6>VAM - Videojogos e Aplicações Multimédia</h6>

@@ -1,30 +1,39 @@
-window.addEventListener('load', function () {
+document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('canvas1');
+    if (!canvas) {
+        console.error("Elemento canvas não encontrado!");
+        return;
+    }
     const ctx = canvas.getContext('2d');
-    canvas.width = 1600; 
-    canvas.height = 720;
+    let originalWidth = 1600;
+    let originalHeight = 720;
+    canvas.width = originalWidth;
+    canvas.height = originalHeight;
     let enemies = [];
     let score = 0;
     let highScore = localStorage.getItem('highScore') || 0;
     let gameOver = false;
     let lives = 3;
-    let enemyInterval = 1000; 
+    let enemyInterval = 1000;
     let randomEnemyInterval = Math.random() * 1000 + 500;
-    let enemySpeedIncrease = 1; 
+    let enemySpeedIncrease = 1;
 
-    // Sound elements
+    // Elementos de som
+    
     const soundtrack = document.getElementById('soundtrack');
-    soundtrack.volume = 0.1; // Adjust the volume of the soundtrack
+    soundtrack.volume = 0.1;
     const damageSound = document.getElementById('damageSound');
     const deathSound = document.getElementById('deathSound');
     const jumpSound = document.getElementById('jumpSound');
     const menuNavigationSound = document.getElementById('menuNavigationSound');
-    const menuClickSound = document.getElementById('menuClickSound'); // New sound element for menu clicks
+    const menuClickSound = document.getElementById('menuClickSound');
     const spiderSound = document.getElementById('spiderSound');
     const wormSound = document.getElementById('wormSound');
 
+    // Redimensiona o canvas conforme o tamanho da janela
+
     function resizeCanvas() {
-        const aspectRatio = 1600 / 720;
+        const aspectRatio = originalWidth / originalHeight;
         let width = window.innerWidth;
         let height = window.innerHeight;
         if (width / height > aspectRatio) {
@@ -41,9 +50,31 @@ window.addEventListener('load', function () {
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // Classe que gere a entrada do jogador
+
     class InputHandler {
         constructor() {
             this.keys = {};
+            this.detectDevice();
+        }
+
+        // Detecta o tipo de dispositivo e configura os controlos adequados
+
+        detectDevice() {
+            if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 'ontouchstart' in window) {
+                console.log("Dispositivo móvel detectado. A inicializar os controlos de toque.");
+                this.setupTouchControls();
+                this.displayMobileTutorial();
+            } else {
+                console.log("Desktop detectado. A inicializar os controlos de teclado.");
+                this.setupKeyboardControls();
+                this.displayDesktopTutorial();
+            }
+        }
+
+        // Configura os controlos de teclado
+
+        setupKeyboardControls() {
             window.addEventListener('keydown', e => {
                 this.keys[e.key] = true;
             });
@@ -51,7 +82,99 @@ window.addEventListener('load', function () {
                 delete this.keys[e.key];
             });
         }
+
+        // Configura os controlos de smart touch
+
+        setupTouchControls() {
+            window.addEventListener('touchstart', e => {
+                if (e.changedTouches.length > 0) {
+                    this.touchX = e.changedTouches[0].pageX;
+                    this.touchY = e.changedTouches[0].pageY;
+                    console.log('Toque inicial', this.touchX, this.touchY);
+                } else {
+                    console.error("Nenhum toque detectado no evento touchstart.");
+                }
+            });
+
+            window.addEventListener('touchmove', e => {
+                if (e.changedTouches.length > 0) {
+                    const swipeXDistance = e.changedTouches[0].pageX - this.touchX;
+                    const swipeYDistance = e.changedTouches[0].pageY - this.touchY;
+
+                    console.log('Movimento do toque', e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+
+                    if (Math.abs(swipeXDistance) > Math.abs(swipeYDistance)) {
+                        if (swipeXDistance < -this.touchThreshold) {
+                            this.keys['ArrowLeft'] = true;
+                            delete this.keys['ArrowRight'];
+                            console.log('Deslizar para a esquerda');
+                        } else if (swipeXDistance > this.touchThreshold) {
+                            this.keys['ArrowRight'] = true;
+                            delete this.keys['ArrowLeft'];
+                            console.log('Deslizar para a direita');
+                        }
+                    }
+                } else {
+                    console.error("Nenhum toque detectado no evento touchmove.");
+                }
+            });
+
+            window.addEventListener('touchend', e => {
+                delete this.keys['ArrowLeft'];
+                delete this.keys['ArrowRight'];
+                delete this.keys['ArrowUp'];
+                console.log('Fim do toque', e.changedTouches);
+            });
+
+            window.addEventListener('touchstart', e => {
+                if (e.target.tagName === 'CANVAS') {
+                    this.keys['ArrowUp'] = true;
+                    console.log('Pular');
+                }
+            });
+
+            window.addEventListener('touchend', e => {
+                delete this.keys['ArrowUp'];
+            });
+        }
+
+        // Exibe o tutorial para desktop
+
+        displayDesktopTutorial() {
+            document.getElementById('tutorial').classList.remove('hidden');
+            document.getElementById('tutorial').innerHTML = `
+                <h1 id="gameTitle">Black or Black</h1>
+                <p>Parabéns em teres chegado a este website. Estás prestes a jogar "Black or Black", um jogo Side-Scroller. Move-te com ←↑→ desvia-te dos inimigos e tenta bater o teu Highscore. Let's Game.</p>
+                <button id="confirmButton">Confirmar</button>
+            `;
+        }
+
+        // Exibe o tutorial para dispositivos móveis
+
+        displayMobileTutorial() {
+            document.getElementById('tutorial').classList.remove('hidden');
+            document.getElementById('tutorial').innerHTML = `
+                <h1 id="gameTitle">Black or Black</h1>
+                <p>Parabéns em teres chegado a este website. Estás prestes a jogar "Black or Black", um jogo Side-Scroller. Clica no ecrã para saltar. Desvia-te dos inimigos e tenta bater o teu Highscore. Let's Game.</p>
+                <button id="confirmButton">Confirmar</button>
+            `;
+        }
     }
+
+    // Classe que gere a entrada do jogador em dispositivos móveis
+
+    class MobileInputHandler extends InputHandler {
+        constructor() {
+            super();
+            this.touchX = null;
+            this.touchY = null;
+            this.touchThreshold = 30; 
+        }
+    }
+
+    const input = new InputHandler();
+
+    // Classe que representa o jogador
 
     class Player {
         constructor(gameWidth, gameHeight) {
@@ -76,6 +199,8 @@ window.addEventListener('load', function () {
             this.invincibleDuration = 3000;
         }
 
+        // Desenha o jogador no canvas
+
         draw(context) {
             if (this.invincible) {
                 if (Math.floor(this.invincibleTimer / 100) % 2) {
@@ -87,6 +212,8 @@ window.addEventListener('load', function () {
             context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
             context.globalAlpha = 1;
         }
+
+        // Atualiza a posição e o estado do jogador
 
         update(input, deltaTime, enemies) {
             if (this.invincible) {
@@ -104,12 +231,12 @@ window.addEventListener('load', function () {
                 if (distance < enemy.colliderWidth / 2 + this.width / 2 && !this.invincible) {
                     lives--;
                     enemy.markedForDeletion = true;
-                    damageSound.play(); // Play damage sound
+                    damageSound.play();
                     this.invincible = true;
                     if (lives <= 0) {
                         gameOver = true;
-                        deathSound.play(); // Play death sound
-                        soundtrack.pause(); // Stop the soundtrack
+                        deathSound.play();
+                        soundtrack.pause();
                     }
                 }
             });
@@ -132,7 +259,7 @@ window.addEventListener('load', function () {
 
             if (input.keys['ArrowUp'] && this.onGround()) {
                 this.vy -= 32;
-                jumpSound.play(); // Play jump sound
+                jumpSound.play();
             }
 
             this.x += this.speed;
@@ -158,6 +285,8 @@ window.addEventListener('load', function () {
         }
     }
 
+    // Classe que representa o fundo do jogo
+
     class Background {
         constructor(gameWidth, gameHeight) {
             this.gameWidth = gameWidth;
@@ -170,16 +299,22 @@ window.addEventListener('load', function () {
             this.speed = 7;
         }
 
+        // Desenha o fundo no canvas
+
         draw(context) {
             context.drawImage(this.image, this.x, this.y, this.width, this.height);
             context.drawImage(this.image, this.x + this.width - this.speed, this.y, this.width, this.height);
         }
+
+        // Atualiza a posição do fundo
 
         update() {
             this.x -= this.speed;
             if (this.x < 0 - this.width) this.x = 0;
         }
     }
+
+    // Classe que representa um inimigo genérico (worm)
 
     class Enemy {
         constructor(gameWidth, gameHeight) {
@@ -195,15 +330,19 @@ window.addEventListener('load', function () {
             this.fps = 20;
             this.frameTimer = 0;
             this.frameInterval = 1000 / this.fps;
-            this.speed = 100; 
+            this.speed = 100;
             this.markedForDeletion = false;
             this.colliderWidth = this.width * 0.6;
             this.colliderHeight = this.height * 0.6;
         }
 
+        // Desenha o inimigo no canvas
+
         draw(context) {
             context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
         }
+
+        // Atualiza a posição e o estado do inimigo
 
         update(deltaTime) {
             if (this.frameTimer > this.frameInterval) {
@@ -219,6 +358,8 @@ window.addEventListener('load', function () {
             score++;
         }
     }
+
+    // Classe que representa o inimigo do tipo Ghost
 
     class Ghost extends Enemy {
         constructor(gameWidth, gameHeight) {
@@ -236,12 +377,16 @@ window.addEventListener('load', function () {
             this.horizontalRange = Math.random() * 100 + 50;
         }
 
+        // Desenha o inimigo Ghost no canvas
+
         draw(context) {
             context.save();
             context.globalAlpha = this.alpha;
             super.draw(context);
             context.restore();
         }
+
+        // Atualiza a posição e o estado do inimigo Ghost
 
         update(deltaTime) {
             super.update(deltaTime);
@@ -260,6 +405,8 @@ window.addEventListener('load', function () {
         }
     }
 
+    // Classe que representa um inimigo do tipo Spider (Aranha)
+
     class Spider extends Enemy {
         constructor(gameWidth, gameHeight) {
             super(gameWidth, gameHeight);
@@ -275,6 +422,8 @@ window.addEventListener('load', function () {
             this.colliderHeight = this.height / 4;
         }
 
+        // Desenha o inimigo Spider no canvas
+
         draw(context) {
             context.beginPath();
             context.moveTo(this.x + this.width / 2, 0);
@@ -283,6 +432,8 @@ window.addEventListener('load', function () {
             super.draw(context);
         }
 
+        // Atualiza a posição e o estado do inimigo Spider
+
         update(deltaTime) {
             super.update(deltaTime);
             this.y += this.vy * deltaTime * enemySpeedIncrease;
@@ -290,6 +441,7 @@ window.addEventListener('load', function () {
             if (this.y < 0 - this.height * 2) this.markedForDeletion = true;
         }
 
+        // Detecta colisão entre o inimigo Spider e o jogador
         detectCollision(player) {
             const dx = (this.x + this.colliderWidth / 2) - (player.x + player.width / 2);
             const dy = (this.y + this.colliderHeight / 2) - (player.y + player.height / 2);
@@ -298,17 +450,19 @@ window.addEventListener('load', function () {
         }
     }
 
+    // Gere os inimigos no jogo
+
     function handleEnemies(deltaTime) {
         if (enemyTimer > enemyInterval + randomEnemyInterval) {
             const randomEnemy = Math.random();
             if (randomEnemy < 0.4) {
                 enemies.push(new Enemy(canvas.width, canvas.height));
-                wormSound.play(); // Play worm sound
+                wormSound.play();
             } else if (randomEnemy < 0.7) {
                 enemies.push(new Ghost(canvas.width, canvas.height));
             } else {
                 enemies.push(new Spider(canvas.width, canvas.height));
-                spiderSound.play(); // Play spider sound
+                spiderSound.play();
             }
             randomEnemyInterval = Math.random() * 1000 + 500;
             enemyTimer = 0;
@@ -325,39 +479,41 @@ window.addEventListener('load', function () {
             if (enemy instanceof Spider && enemy.detectCollision(player)) {
                 lives--;
                 enemy.markedForDeletion = true;
-                damageSound.play(); // Play damage sound
+                damageSound.play();
                 if (lives <= 0) {
                     gameOver = true;
-                    deathSound.play(); // Play death sound
-                    soundtrack.pause(); // Stop the soundtrack
+                    deathSound.play();
+                    soundtrack.pause();
                 }
             }
         });
         enemies = enemies.filter(enemy => !enemy.markedForDeletion);
     }
 
+    // Exibe o estado do jogo no canvas
+
     function displayStatusText(context) {
         context.font = '40px Helvetica';
-        context.textAlign = 'left'; // Set text alignment to left
+        context.textAlign = 'left';
         context.fillStyle = 'black';
-        context.fillText('Score ' + score, 50, 50); // Adjust to position the score text
+        context.fillText('Pontuação ' + score, 50, 50);
         context.fillStyle = 'white';
-        context.fillText('Score ' + score, 53, 53); // Adjust to position the score text
-        document.getElementById('currentScore').innerText = 'Score: ' + score;
+        context.fillText('Pontuação ' + score, 53, 53);
+        document.getElementById('currentScore').innerText = 'Pontuação: ' + score;
         if (gameOver) {
             context.textAlign = 'center';
             context.fillStyle = 'black';
-            context.fillText('GAME OVER, try again!', canvas.width / 2, 200);
+            context.fillText('GAME OVER, tenta novamente!', canvas.width / 2, 200);
             context.fillStyle = 'white';
-            context.fillText('GAME OVER, try again!', canvas.width / 2 + 2, 203);
+            context.fillText('GAME OVER, tenta novamente!', canvas.width / 2 + 2, 203);
+            document.getElementById('scoreContainer').style.display = 'block';
             document.getElementById('retryButton').style.display = 'block';
             document.getElementById('quitButton').style.display = 'block';
-            document.getElementById('scoreContainer').style.display = 'block';
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('highScore', highScore);
             }
-            document.getElementById('highScore').innerText = 'High Score: ' + highScore;
+            document.getElementById('highScore').innerText = 'Pontuação Máxima: ' + highScore;
         }
         context.textAlign = 'right';
         for (let i = 0; i < lives; i++) {
@@ -365,12 +521,13 @@ window.addEventListener('load', function () {
         }
     }
 
-    const input = new InputHandler();
     const player = new Player(canvas.width, canvas.height);
     const background = new Background(canvas.width, canvas.height);
 
     let lastTime = 0;
     let enemyTimer = 0;
+
+    // Função de animação do jogo
 
     function animate(timeStamp) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -389,37 +546,35 @@ window.addEventListener('load', function () {
 
     document.getElementById('confirmButton').addEventListener('click', function () {
         document.getElementById('tutorial').style.display = 'none';
-        menuClickSound.play(); // Play menu click sound on click
-        soundtrack.play(); // Play the soundtrack
-        animate(0); // Start the game animation
+        menuClickSound.play();
+        soundtrack.play();
+        animate(0);
     });
 
     document.getElementById('retryButton').addEventListener('click', function () {
-        menuClickSound.play(); // Play menu click sound on click
+        menuClickSound.play();
         window.location.reload();
     });
 
     document.getElementById('quitButton').addEventListener('click', function () {
-        menuClickSound.play(); // Play menu click sound on click
+        menuClickSound.play();
         const videoContainer = document.getElementById('videoContainer');
         videoContainer.innerHTML = '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
         videoContainer.style.display = 'block';
     });
 
-    // Add mouseover event listeners for the buttons
     document.getElementById('retryButton').addEventListener('mouseover', function () {
-        menuNavigationSound.play(); // Play menu navigation sound on hover
+        menuNavigationSound.play();
     });
 
     document.getElementById('quitButton').addEventListener('mouseover', function () {
-        menuNavigationSound.play(); // Play menu navigation sound on hover
+        menuNavigationSound.play();
     });
 
     document.getElementById('confirmButton').addEventListener('mouseover', function () {
-        menuNavigationSound.play(); // Play menu navigation sound on hover
+        menuNavigationSound.play();
     });
 
-    // Draw the initial background and player for the standby phase
     background.draw(ctx);
     player.draw(ctx);
 });
