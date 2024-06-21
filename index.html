@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript 2D Game</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <canvas id="canvas1"></canvas>
+    <img id="playerImage" src="player.png" alt="Player Image">
+    <img id="backgroundImage" src="background.png" alt="Background Image">
+    <img id="enemyImage" src="enemy_1.png" alt="Enemy Image">
+    <img id="ghostImage" src="ghost.png" alt="Ghost Image">
+    <img id="spiderImage" src="spider.png" alt="Spider Image">
+    <img id="heartImage" src="lives.png" alt="Heart Image" style="display:none">
+    <button id="retryButton">Retry</button>
+    <button id="quitButton">Quit</button>
+    <div id="scoreContainer">
+        <p id="highScore">High Score: 0</p>
+        <p id="currentScore">Score: 0</p>
+    </div>
+    <div id="videoContainer"></div>
+    <div id="tutorial">
+        <h1 id="gameTitle">Black or Black</h1>
+        <p>Parabéns em teres chegado a este website. Estás prestes a jogar "Black or Black", um jogo Side-Scroller. Move-te com ←↑→ desvia-te dos inimigos e tenta bater o teu Highscore. Let's Game.</p>
+        <button id="confirmButton">Confirm</button>
+    </div>
+    <audio id="soundtrack" src="LASERS_-_01_-_Amsterdam.mp3" loop></audio>
+    <audio id="damageSound" src="damage.wav"></audio>
+    <audio id="deathSound" src="death.wav"></audio>
+    <audio id="jumpSound" src="jump.wav"></audio>
+    <audio id="menuNavigationSound" src="menu_navigation.wav"></audio>
+    <audio id="menuClickSound" src="menu_click.wav"></audio> <!-- Ensure this audio element is present -->
+    <audio id="spiderSound" src="spider.wav"></audio>
+    <audio id="wormSound" src="worm.wav"></audio>
+    <script src="script.js"></script>
+    <footer>
+        <h5>Renato Cruz</h5>
+        <h6>VAM - Videojogos e Aplicações Multimédia</h6>
+    </footer>
+</body>
+</html>
